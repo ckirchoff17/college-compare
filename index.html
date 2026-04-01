@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>College Comparison Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f2ec;
+  --surface: #ffffff;
+  --border: rgba(60,50,30,0.12);
+  --border-md: rgba(60,50,30,0.22);
+  --text: #1a1510;
+  --text-2: #5c5346;
+  --text-3: #9c8e7e;
+  --tech: #1a3a6b;
+  --tech-bg: #e8eef8;
+  --state: #1e4d2b;
+  --state-bg: #e6f2eb;
+  --lib: #4a1d6b;
+  --lib-bg: #f0e8f8;
+  --accent: #c45c2a;
+  --radius: 12px;
+  --radius-sm: 7px;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+header {
+  background: var(--text);
+  color: #f5f2ec;
+  padding: 3rem 2rem 2.5rem;
+  text-align: center;
+}
+header .eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+  font-weight: 500;
+}
+header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  line-height: 1.15;
+  margin-bottom: 0.75rem;
+  font-weight: 400;
+}
+header p {
+  font-size: 15px;
+  color: rgba(245,242,236,0.65);
+  max-width: 520px;
+  margin: 0 auto;
+  font-weight: 300;
+}
+
+.tabs-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  overflow-x: auto;
+}
+.tab-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 1rem 1.4rem;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--text); border-bottom-color: var(--accent); }
+
+main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+.panel { display: none; }
+.panel.visible { display: block; }
+
+.cat-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2rem; }
+.cat-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-md);
+  background: var(--surface);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cat-btn:hover { border-color: var(--text-3); color: var(--text); }
+.cat-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 700px) { .cards-grid { grid-template-columns: 1fr; } }
+
+.school-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.card-accent { height: 4px; }
+.accent-tech { background: var(--tech); }
+.accent-state { background: var(--state); }
+.accent-lib { background: var(--lib); }
+
+.card-head {
+  padding: 1.1rem 1.2rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+.school-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 4px;
+  margin-bottom: 7px;
+}
+.badge-tech { background: var(--tech-bg); color: var(--tech); }
+.badge-state { background: var(--state-bg); color: var(--state); }
+.badge-lib { background: var(--lib-bg); color: var(--lib); }
+
+.school-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.2;
+  margin-bottom: 3px;
+}
+.school-sub { font-size: 12px; color: var(--text-3); }
+.card-body { padding: 1rem 1.2rem; flex: 1; }
+.section-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 10px;
+}
+.data-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.data-row:last-child { border-bottom: none; }
+.data-key { color: var(--text-2); flex-shrink: 0; }
+.data-val { font-weight: 500; text-align: right; color: var(--text); }
+
+.footnote {
+  margin-top: 2rem;
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+  line-height: 1.7;
+}
+
+/* BUILDER */
+.builder-intro { text-align: center; margin-bottom: 2.5rem; }
+.builder-intro h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  margin-bottom: 0.5rem;
+}
+.builder-intro p { font-size: 14px; color: var(--text-2); }
+
+.school-inputs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 600px) { .school-inputs { grid-template-columns: 1fr; } }
+
+.input-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+}
+.input-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 8px;
+  display: block;
+}
+.school-input {
+  width: 100%;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-md);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.school-input:focus { border-color: var(--accent); }
+.school-input::placeholder { color: var(--text-3); }
+
+.generate-btn {
+  display: block;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto 2rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 24px;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.generate-btn:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+.generate-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.loading-state { display: none; text-align: center; padding: 3rem 1rem; }
+.loading-state.visible { display: block; }
+.spinner {
+  width: 36px; height: 36px;
+  border: 2px solid var(--border-md);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-state p { font-size: 14px; color: var(--text-2); }
+.loading-status { font-size: 13px; color: var(--text-3); margin-top: 6px; }
+
+.error-box {
+  background: #fff3f3;
+  border: 1px solid #f5c0c0;
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.5rem;
+  font-size: 13px;
+  color: #8b1a1a;
+  display: none;
+  line-height: 1.6;
+}
+.error-box.visible { display: block; }
+
+#custom-results { display: none; }
+#custom-results.visible { display: block; }
+#custom-cat-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 2rem; }
+
+/* GUIDE PANEL */
+.guide-section { max-width: 760px; margin: 0 auto; }
+.guide-section h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  margin-bottom: 0.4rem;
+}
+.guide-section .lead { font-size: 14px; color: var(--text-2); margin-bottom: 2rem; }
+
+.steps-list { list-style: none; counter-reset: steps; margin-bottom: 2.5rem; }
+.steps-list li {
+  counter-increment: steps;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.steps-list li::before {
+  content: counter(steps);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  background: var(--text);
+  color: var(--bg);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+.steps-list li strong { font-weight: 600; color: var(--text); }
+.steps-list li span { color: var(--text-2); }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+.section-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.questions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 600px) { .questions-grid { grid-template-columns: 1fr; } }
+
+.q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.q-card-head {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.q-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot-acad { background: var(--tech); }
+.dot-cost { background: var(--accent); }
+.dot-camp { background: var(--state); }
+.dot-out  { background: var(--lib); }
+.dot-res  { background: #8b5e3c; }
+.dot-all  { background: var(--text-3); }
+.q-card-head h3 {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.q-card-body { padding: 0.85rem 1rem; }
+.q-card-body ul { list-style: none; }
+.q-card-body ul li {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.6;
+  padding: 5px 0 5px 14px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.q-card-body ul li::before { content: '→'; position: absolute; left: 0; color: var(--text-3); font-size: 11px; }
+.q-card-body ul li:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">College Exploration Tool</p>
+  <h1>Compare Your Options</h1>
+  <p>Explore how different types of colleges stack up — or build your own custom comparison.</p>
+</header>
+
+<div class="tabs-bar">
+  <button class="tab-btn active" data-tab="preset">Caltech · UCLA · Pomona</button>
+  <button class="tab-btn" data-tab="builder">Build Your Own</button>
+  <button class="tab-btn" data-tab="guide">How to Use</button>
+</div>
+
+<main>
+
+  <!-- PRESET PANEL -->
+  <div class="panel visible" id="tab-preset">
+    <div class="cat-filter" id="preset-cat-filter"></div>
+    <div class="cards-grid" id="preset-cards"></div>
+    <p class="footnote">Data reflects publicly available figures for the 2024–25 academic year where available.<br>Cost of attendance is estimated total for out-of-state / non-resident students. Acceptance rates are approximate.</p>
+  </div>
+
+  <!-- BUILDER PANEL -->
+  <div class="panel" id="tab-builder">
+    <div class="builder-intro">
+      <h2>Build your own comparison</h2>
+      <p>Enter any three colleges below and we'll generate a detailed side-by-side comparison for you.</p>
+    </div>
+    <div class="school-inputs">
+      <div class="input-card">
+        <label class="input-label">School 1</label>
+        <input class="school-input" id="inp1" type="text" placeholder="e.g. MIT" />
+      </div>
+      <div class="input-card">
+        <label class="input-label">School 2</label>
+        <input class="school-input" id="inp2" type="text" placeholder="e.g. University of Michigan" />
+      </div>
+      <div class="input-card">
+        <label class="input-label">School 3</label>
+        <input class="school-input" id="inp3" type="text" placeholder="e.g. Williams College" />
+      </div>
+    </div>
+    <button class="generate-btn" id="gen-btn">Generate comparison →</button>
+    <div class="error-box" id="error-box"></div>
+    <div class="loading-state" id="loading-state">
+      <div class="spinner"></div>
+      <p>Researching your schools…</p>
+      <p class="loading-status" id="loading-status">This usually takes 15–25 seconds.</p>
+    </div>
+    <div id="custom-results">
+      <div id="custom-cat-filter"></div>
+      <div class="cards-grid" id="custom-cards"></div>
+      <p class="footnote">Data generated by AI — treat it as a starting point and verify key figures directly with each institution.</p>
+    </div>
+  </div>
+
+  <!-- GUIDE PANEL -->
+  <div class="panel" id="tab-guide">
+    <div class="guide-section">
+      <p class="section-eyebrow">Getting started</p>
+      <h2>How to use this tool</h2>
+      <p class="lead">Follow these steps to get the most out of your research — the data here is a starting point, not the final word.</p>
+      <ol class="steps-list">
+        <li><div><strong>Explore the pre-built comparison.</strong> <span>The first tab shows Caltech, UCLA, and Pomona — one example of each school type. Use the category buttons to browse Academics, Cost & Aid, Campus Life, Outcomes, and Research & Internships.</span></div></li>
+        <li><div><strong>Don't just read — question.</strong> <span>Use the guiding questions below to dig deeper into what the data actually means for you personally.</span></div></li>
+        <li><div><strong>Build your own comparison.</strong> <span>Click "Build Your Own," type the names of any three colleges you're considering, and hit Generate. The tool will research and populate a full comparison in about 20 seconds.</span></div></li>
+        <li><div><strong>Verify what you find.</strong> <span>Before making any decisions, confirm key figures — especially cost, aid, and deadlines — directly on each school's official website.</span></div></li>
+        <li><div><strong>Go beyond the tool.</strong> <span>Look up a professor, run the Net Price Calculator, find a student blog. The best research happens when you talk to real people at real schools.</span></div></li>
+      </ol>
+      <hr class="divider">
+      <p class="section-eyebrow">Dig deeper</p>
+      <h2>Guiding questions</h2>
+      <p class="lead">Use these to push past the surface data and think about what each school actually means for you.</p>
+      <div class="questions-grid">
+        <div class="q-card">
+          <div class="q-card-head"><span class="q-dot dot-acad"></span><h3>Academics</h3></div>
+          <div class="q-card-body"><ul>
+            <li>Does this school's focus match what you want to study? What happens if you change your mind?</li>
+            <li>Look up one professor in a department you're interested in. Could you see yourself in their classroom?</li>
+            <li>What does a 3:1 vs. 18:1 student-faculty ratio actually mean for your daily experience?</li>
+          </ul></div>
+        </div>
+        <div class="q-card">
+          <div class="q-card-head"><span class="q-dot dot-cost"></span><h3>Cost & Financial Aid</h3></div>
+          <div class="q-card-body"><ul>
+            <li>Run your family's numbers through each school's Net Price Calculator. How close is it to the average shown?</li>
+            <li>Is the aid in grants, loans, or work-study — and does it continue all four years?</li>
+            <li>Does the school meet 100% of need for all students, or just some?</li>
+          </ul></div>
+        </div>
+        <div class="q-card">
+          <div class="q-card-head"><span class="q-dot dot-camp"></span><h3>Campus Life</h3></div>
+          <div class="q-card-body"><ul>
+            <li>Find one club, org, or tradition that genuinely excites you. Would you actually join it?</li>
+            <li>What does a typical Tuesday — not just a weekend — look like for students here?</li>
+            <li>How far is the nearest city? What do students do when they need to get off campus?</li>
+          </ul></div>
+        </div>
+        <div class="q-card">
+          <div class="q-card-head"><span class="q-dot dot-out"></span><h3>Outcomes</h3></div>
+          <div class="q-card-body"><ul>
+            <li>Median salary is a midpoint — half earn less. What do salaries look like in your specific field?</li>
+            <li>Search the school on LinkedIn. Where do real alumni actually end up working?</li>
+            <li>If grad school is on your radar, where have recent graduates been admitted?</li>
+          </ul></div>
+        </div>
+        <div class="q-card">
+          <div class="q-card-head"><span class="q-dot dot-res"></span><h3>Research & Internships</h3></div>
+          <div class="q-card-body"><ul>
+            <li>Is research something you seek out, or does the school actively place students in it?</li>
+            <li>Look up one specific program listed. Who's eligible? When do you apply?</li>
+            <li>Does the internship pipeline match the industry or city you want to work in?</li>
+          </ul></div>
+        </div>
+        <div class="q-card">
+          <div class="q-card-head"><span class="q-dot dot-all"></span><h3>Across all three schools</h3></div>
+          <div class="q-card-body"><ul>
+            <li>Which school surprised you most — and why? What assumption turned out to be wrong?</li>
+            <li>If cost were off the table, which would you choose? Does that change when cost is on the table?</li>
+            <li>What's one question the tool didn't answer that actually matters to you?</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const CATEGORIES = [
+  { key: 'academics', label: 'Academics' },
+  { key: 'cost',      label: 'Cost & Aid' },
+  { key: 'campus',    label: 'Campus Life' },
+  { key: 'outcomes',  label: 'Outcomes' },
+  { key: 'research',  label: 'Research & Internships' },
+];
+
+const PRESET_SCHOOLS = [
+  {
+    name: 'Caltech', fullName: 'California Institute of Technology',
+    type: 'Technical Institution', loc: 'Pasadena, CA',
+    accent: 'accent-tech', badge: 'badge-tech',
+    sections: {
+      academics: [
+        { k: 'US News ranking', v: '#9 (National Univ.)' },
+        { k: 'Acceptance rate', v: '~3%' },
+        { k: 'Student-faculty ratio', v: '3:1' },
+        { k: 'Curricular focus', v: 'STEM-exclusive' },
+        { k: 'Strongest areas', v: 'Physics, CS, engineering, chemistry' },
+      ],
+      cost: [
+        { k: 'Tuition & fees', v: '~$63,300/yr' },
+        { k: 'Est. total cost of attendance', v: '~$90,000/yr' },
+        { k: 'Average aid package', v: '~$57,000/yr' },
+        { k: 'Students receiving aid', v: '~62%' },
+        { k: 'Meets 100% of need?', v: 'Yes' },
+      ],
+      campus: [
+        { k: 'Undergrad enrollment', v: '~960' },
+        { k: 'Setting', v: 'Suburban — Pasadena' },
+        { k: 'Housing guarantee', v: '4 years' },
+        { k: 'Athletics', v: 'NCAA D3 (22 sports)' },
+        { k: 'Social structure', v: 'Unique house system (no Greek)' },
+      ],
+      outcomes: [
+        { k: '6-year graduation rate', v: '~93%' },
+        { k: 'Go to graduate school', v: '~60%' },
+        { k: 'Median early-career salary', v: '~$92,000' },
+        { k: 'Top sectors', v: 'Tech, aerospace, academia, research' },
+      ],
+      research: [
+        { k: 'Undergrad participation rate', v: '~90%+' },
+        { k: 'Signature program', v: 'SURF fellowships' },
+        { k: 'Annual research expenditure', v: '~$412M' },
+        { k: 'Key internship pipeline', v: 'JPL, NASA, Silicon Valley' },
+        { k: 'Senior thesis required?', v: 'No (but common)' },
+      ],
+    }
+  },
+  {
+    name: 'UCLA', fullName: 'University of California, Los Angeles',
+    type: 'State University', loc: 'Los Angeles, CA',
+    accent: 'accent-state', badge: 'badge-state',
+    sections: {
+      academics: [
+        { k: 'US News ranking', v: '#15 (National Univ.)' },
+        { k: 'Acceptance rate', v: '~9%' },
+        { k: 'Student-faculty ratio', v: '18:1' },
+        { k: 'Curricular focus', v: 'Broad — 125+ majors' },
+        { k: 'Strongest areas', v: 'Engineering, film, business, sciences, pre-med' },
+      ],
+      cost: [
+        { k: 'In-state tuition & fees', v: '~$14,300/yr' },
+        { k: 'Out-of-state cost of attendance', v: '~$68,000/yr' },
+        { k: 'Average aid package', v: '~$25,000/yr' },
+        { k: 'Students receiving aid', v: '~57%' },
+        { k: 'Meets 100% of need?', v: 'Yes (CA residents)' },
+      ],
+      campus: [
+        { k: 'Undergrad enrollment', v: '~32,400' },
+        { k: 'Setting', v: 'Urban/suburban — Westwood' },
+        { k: 'Housing guarantee', v: '1st & 2nd year' },
+        { k: 'Athletics', v: 'NCAA D1 (21 sports)' },
+        { k: 'Social structure', v: 'Active Greek life (60+ chapters)' },
+      ],
+      outcomes: [
+        { k: '6-year graduation rate', v: '~92%' },
+        { k: 'Go to graduate school', v: '~35%' },
+        { k: 'Median early-career salary', v: '~$68,000' },
+        { k: 'Top sectors', v: 'Tech, entertainment, healthcare, finance' },
+      ],
+      research: [
+        { k: 'Undergrad participation rate', v: '~30–40%' },
+        { k: 'Signature programs', v: 'UROP, Undergraduate Research Centers' },
+        { k: 'Annual research expenditure', v: '~$1.5B' },
+        { k: 'Key internship pipeline', v: 'LA tech, media, biotech, government' },
+        { k: 'Senior thesis required?', v: 'No (optional honors thesis)' },
+      ],
+    }
+  },
+  {
+    name: 'Pomona', fullName: 'Pomona College',
+    type: 'Liberal Arts College', loc: 'Claremont, CA',
+    accent: 'accent-lib', badge: 'badge-lib',
+    sections: {
+      academics: [
+        { k: 'US News ranking', v: '#4 (Liberal Arts)' },
+        { k: 'Acceptance rate', v: '~7%' },
+        { k: 'Student-faculty ratio', v: '7:1' },
+        { k: 'Curricular focus', v: 'Broad liberal arts' },
+        { k: 'Strongest areas', v: 'Sciences, economics, politics, humanities' },
+      ],
+      cost: [
+        { k: 'Tuition & fees', v: '~$61,600/yr' },
+        { k: 'Est. total cost of attendance', v: '~$84,000/yr' },
+        { k: 'Average aid package', v: '~$60,000/yr' },
+        { k: 'Students receiving aid', v: '~55%' },
+        { k: 'Meets 100% of need?', v: 'Yes — no loans' },
+      ],
+      campus: [
+        { k: 'Undergrad enrollment', v: '~1,700' },
+        { k: 'Setting', v: 'Suburban — 5C Consortium' },
+        { k: 'Housing guarantee', v: '4 years' },
+        { k: 'Athletics', v: 'NCAA D3 (21 sports)' },
+        { k: 'Social structure', v: 'No Greek; residential college system' },
+      ],
+      outcomes: [
+        { k: '6-year graduation rate', v: '~95%' },
+        { k: 'Go to graduate school', v: '~65% within 10 years' },
+        { k: 'Median early-career salary', v: '~$63,000' },
+        { k: 'Top sectors', v: 'Finance, consulting, academia, nonprofits' },
+      ],
+      research: [
+        { k: 'Undergrad participation rate', v: '~75%+' },
+        { k: 'Signature programs', v: 'SURP, Pomona Research Scholars' },
+        { k: 'Annual research expenditure', v: '~$8M (teaching-focused)' },
+        { k: 'Key internship pipeline', v: 'Alumni network, CMC Hive, LA access' },
+        { k: 'Senior thesis required?', v: 'Yes' },
+      ],
+    }
+  }
+];
+
+// ── HELPERS ──
+function buildCatFilter(containerId, activeCat, onChange) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = CATEGORIES.map(c =>
+    `<button class="cat-btn${c.key === activeCat ? ' active' : ''}" data-key="${c.key}">${c.label}</button>`
+  ).join('');
+  el.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      el.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      onChange(btn.dataset.key);
+    });
+  });
+}
+
+function renderCards(containerId, schools, activeCat) {
+  const grid = document.getElementById(containerId);
+  const catLabel = CATEGORIES.find(c => c.key === activeCat)?.label || activeCat;
+  grid.innerHTML = schools.map(s => {
+    const rows = (s.sections[activeCat] || []).map(r =>
+      `<div class="data-row"><span class="data-key">${r.k}</span><span class="data-val">${r.v}</span></div>`
+    ).join('');
+    return `
+      <div class="school-card">
+        <div class="card-accent ${s.accent}"></div>
+        <div class="card-head">
+          <span class="school-badge ${s.badge}">${s.type}</span>
+          <div class="school-name">${s.name}</div>
+          <div class="school-sub">${s.fullName} &middot; ${s.loc}</div>
+        </div>
+        <div class="card-body">
+          <div class="section-title">${catLabel}</div>
+          ${rows}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── TABS ──
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('visible'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('visible');
+  });
+});
+
+// ── PRESET ──
+let presetCat = 'academics';
+buildCatFilter('preset-cat-filter', presetCat, key => {
+  presetCat = key;
+  renderCards('preset-cards', PRESET_SCHOOLS, presetCat);
+});
+renderCards('preset-cards', PRESET_SCHOOLS, presetCat);
+
+// ── BUILDER ──
+const ACCENTS = ['accent-tech', 'accent-state', 'accent-lib'];
+const BADGES  = ['badge-tech',  'badge-state',  'badge-lib'];
+let customCat = 'academics';
+
+document.getElementById('gen-btn').addEventListener('click', async () => {
+  const vals = ['inp1', 'inp2', 'inp3'].map(id => document.getElementById(id).value.trim());
+  if (vals.some(v => !v)) { showError('Please enter a name for all three schools.'); return; }
+
+  hideError();
+  document.getElementById('loading-state').classList.add('visible');
+  document.getElementById('custom-results').classList.remove('visible');
+  document.getElementById('gen-btn').disabled = true;
+
+  const statuses = [
+    'Gathering academic data…',
+    'Looking up financial aid figures…',
+    'Checking campus and enrollment info…',
+    'Researching research programs…',
+    'Compiling outcomes data…',
+    'Putting it all together…',
+  ];
+  let si = 0;
+  const statusEl = document.getElementById('loading-status');
+  const ticker = setInterval(() => { statusEl.textContent = statuses[++si % statuses.length]; }, 4000);
+
+  try {
+    const res = await fetch('/.netlify/functions/compare', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ schools: vals }),
+    });
+
+    clearInterval(ticker);
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Server error');
+    }
+
+    const data = await res.json();
+    const clean = data.result.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    const customSchools = parsed.map((s, i) => ({ ...s, accent: ACCENTS[i], badge: BADGES[i] }));
+
+    customCat = 'academics';
+    buildCatFilter('custom-cat-filter', customCat, key => {
+      customCat = key;
+      renderCards('custom-cards', customSchools, customCat);
+    });
+    renderCards('custom-cards', customSchools, customCat);
+    document.getElementById('custom-results').classList.add('visible');
+
+  } catch (err) {
+    clearInterval(ticker);
+    showError('Something went wrong: ' + err.message + '. Please try again.');
+  } finally {
+    document.getElementById('loading-state').classList.remove('visible');
+    document.getElementById('gen-btn').disabled = false;
+  }
+});
+
+['inp1', 'inp2', 'inp3'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('gen-btn').click();
+  });
+});
+
+function showError(msg) {
+  const el = document.getElementById('error-box');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+function hideError() {
+  document.getElementById('error-box').classList.remove('visible');
+}
+</script>
+</body>
+</html>
