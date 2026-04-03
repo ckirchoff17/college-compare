@@ -731,11 +731,13 @@ document.getElementById('gen-btn').addEventListener('click', async () => {
     clearInterval(ticker);
 
     const text = await res.text();
+    console.log('Function response status:', res.status);
+    console.log('Function response body:', text);
     let data;
     try {
       data = JSON.parse(text);
     } catch {
-      throw new Error('Server returned an unexpected response. Please try again.');
+      throw new Error('Server returned an unexpected response (status ' + res.status + '): ' + text.slice(0, 200));
     }
 
     if (!res.ok) {

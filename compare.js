@@ -121,12 +121,14 @@ Use ~ for approximate values. Keep all values short (phrases, not sentences). Re
 
   try {
     const results = await Promise.all(schools.map(fetchSchool));
+    console.log("Success, returning", results.length, "schools");
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ result: results }),
     };
   } catch (err) {
+    console.log("Caught error:", err.message);
     return {
       statusCode: 500,
       headers: { "Content-Type": "application/json" },
